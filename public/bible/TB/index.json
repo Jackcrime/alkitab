@@ -1,0 +1,464 @@
+[
+  {
+    "bnumber": 1,
+    "name": "Kejadian",
+    "slug": "kejadian",
+    "file": "01-kejadian.json",
+    "chapters": 50
+  },
+  {
+    "bnumber": 2,
+    "name": "Keluaran",
+    "slug": "keluaran",
+    "file": "02-keluaran.json",
+    "chapters": 40
+  },
+  {
+    "bnumber": 3,
+    "name": "Imamat",
+    "slug": "imamat",
+    "file": "03-imamat.json",
+    "chapters": 27
+  },
+  {
+    "bnumber": 4,
+    "name": "Bilangan",
+    "slug": "bilangan",
+    "file": "04-bilangan.json",
+    "chapters": 36
+  },
+  {
+    "bnumber": 5,
+    "name": "Ulangan",
+    "slug": "ulangan",
+    "file": "05-ulangan.json",
+    "chapters": 34
+  },
+  {
+    "bnumber": 6,
+    "name": "Yosua",
+    "slug": "yosua",
+    "file": "06-yosua.json",
+    "chapters": 24
+  },
+  {
+    "bnumber": 7,
+    "name": "Hakim-Hakim",
+    "slug": "hakim-hakim",
+    "file": "07-hakim-hakim.json",
+    "chapters": 21
+  },
+  {
+    "bnumber": 8,
+    "name": "Rut",
+    "slug": "rut",
+    "file": "08-rut.json",
+    "chapters": 4
+  },
+  {
+    "bnumber": 9,
+    "name": "1 Samuel",
+    "slug": "1-samuel",
+    "file": "09-1-samuel.json",
+    "chapters": 31
+  },
+  {
+    "bnumber": 10,
+    "name": "2 Samuel",
+    "slug": "2-samuel",
+    "file": "10-2-samuel.json",
+    "chapters": 24
+  },
+  {
+    "bnumber": 11,
+    "name": "1 Raja-Raja",
+    "slug": "1-raja-raja",
+    "file": "11-1-raja-raja.json",
+    "chapters": 22
+  },
+  {
+    "bnumber": 12,
+    "name": "2 Raja-Raja",
+    "slug": "2-raja-raja",
+    "file": "12-2-raja-raja.json",
+    "chapters": 25
+  },
+  {
+    "bnumber": 13,
+    "name": "1 Tawarikh",
+    "slug": "1-tawarikh",
+    "file": "13-1-tawarikh.json",
+    "chapters": 29
+  },
+  {
+    "bnumber": 14,
+    "name": "2 Tawarikh",
+    "slug": "2-tawarikh",
+    "file": "14-2-tawarikh.json",
+    "chapters": 36
+  },
+  {
+    "bnumber": 15,
+    "name": "Ezra",
+    "slug": "ezra",
+    "file": "15-ezra.json",
+    "chapters": 10
+  },
+  {
+    "bnumber": 16,
+    "name": "Nehemia",
+    "slug": "nehemia",
+    "file": "16-nehemia.json",
+    "chapters": 13
+  },
+  {
+    "bnumber": 17,
+    "name": "Ester",
+    "slug": "ester",
+    "file": "17-ester.json",
+    "chapters": 10
+  },
+  {
+    "bnumber": 18,
+    "name": "Ayub",
+    "slug": "ayub",
+    "file": "18-ayub.json",
+    "chapters": 42
+  },
+  {
+    "bnumber": 19,
+    "name": "Mazmur",
+    "slug": "mazmur",
+    "file": "19-mazmur.json",
+    "chapters": 150
+  },
+  {
+    "bnumber": 20,
+    "name": "Amsal",
+    "slug": "amsal",
+    "file": "20-amsal.json",
+    "chapters": 31
+  },
+  {
+    "bnumber": 21,
+    "name": "Pengkhotbah",
+    "slug": "pengkhotbah",
+    "file": "21-pengkhotbah.json",
+    "chapters": 12
+  },
+  {
+    "bnumber": 22,
+    "name": "Kidung Agung",
+    "slug": "kidung-agung",
+    "file": "22-kidung-agung.json",
+    "chapters": 8
+  },
+  {
+    "bnumber": 23,
+    "name": "Yesaya",
+    "slug": "yesaya",
+    "file": "23-yesaya.json",
+    "chapters": 66
+  },
+  {
+    "bnumber": 24,
+    "name": "Yeremia",
+    "slug": "yeremia",
+    "file": "24-yeremia.json",
+    "chapters": 52
+  },
+  {
+    "bnumber": 25,
+    "name": "Ratapan",
+    "slug": "ratapan",
+    "file": "25-ratapan.json",
+    "chapters": 5
+  },
+  {
+    "bnumber": 26,
+    "name": "Yehezkiel",
+    "slug": "yehezkiel",
+    "file": "26-yehezkiel.json",
+    "chapters": 48
+  },
+  {
+    "bnumber": 27,
+    "name": "Daniel",
+    "slug": "daniel",
+    "file": "27-daniel.json",
+    "chapters": 12
+  },
+  {
+    "bnumber": 28,
+    "name": "Hosea",
+    "slug": "hosea",
+    "file": "28-hosea.json",
+    "chapters": 14
+  },
+  {
+    "bnumber": 29,
+    "name": "Yoel",
+    "slug": "yoel",
+    "file": "29-yoel.json",
+    "chapters": 3
+  },
+  {
+    "bnumber": 30,
+    "name": "Amos",
+    "slug": "amos",
+    "file": "30-amos.json",
+    "chapters": 9
+  },
+  {
+    "bnumber": 31,
+    "name": "Obaja",
+    "slug": "obaja",
+    "file": "31-obaja.json",
+    "chapters": 1
+  },
+  {
+    "bnumber": 32,
+    "name": "Yunus",
+    "slug": "yunus",
+    "file": "32-yunus.json",
+    "chapters": 4
+  },
+  {
+    "bnumber": 33,
+    "name": "Mikha",
+    "slug": "mikha",
+    "file": "33-mikha.json",
+    "chapters": 7
+  },
+  {
+    "bnumber": 34,
+    "name": "Nahum",
+    "slug": "nahum",
+    "file": "34-nahum.json",
+    "chapters": 3
+  },
+  {
+    "bnumber": 35,
+    "name": "Habakuk",
+    "slug": "habakuk",
+    "file": "35-habakuk.json",
+    "chapters": 3
+  },
+  {
+    "bnumber": 36,
+    "name": "Zefanya",
+    "slug": "zefanya",
+    "file": "36-zefanya.json",
+    "chapters": 3
+  },
+  {
+    "bnumber": 37,
+    "name": "Hagai",
+    "slug": "hagai",
+    "file": "37-hagai.json",
+    "chapters": 2
+  },
+  {
+    "bnumber": 38,
+    "name": "Zakharia",
+    "slug": "zakharia",
+    "file": "38-zakharia.json",
+    "chapters": 14
+  },
+  {
+    "bnumber": 39,
+    "name": "Maleakhi",
+    "slug": "maleakhi",
+    "file": "39-maleakhi.json",
+    "chapters": 4
+  },
+  {
+    "bnumber": 40,
+    "name": "Matius",
+    "slug": "matius",
+    "file": "40-matius.json",
+    "chapters": 28
+  },
+  {
+    "bnumber": 41,
+    "name": "Markus",
+    "slug": "markus",
+    "file": "41-markus.json",
+    "chapters": 16
+  },
+  {
+    "bnumber": 42,
+    "name": "Lukas",
+    "slug": "lukas",
+    "file": "42-lukas.json",
+    "chapters": 24
+  },
+  {
+    "bnumber": 43,
+    "name": "Yohanes",
+    "slug": "yohanes",
+    "file": "43-yohanes.json",
+    "chapters": 21
+  },
+  {
+    "bnumber": 44,
+    "name": "Kisah Para Rasul",
+    "slug": "kisah-para-rasul",
+    "file": "44-kisah-para-rasul.json",
+    "chapters": 28
+  },
+  {
+    "bnumber": 45,
+    "name": "Roma",
+    "slug": "roma",
+    "file": "45-roma.json",
+    "chapters": 16
+  },
+  {
+    "bnumber": 46,
+    "name": "1 Korintus",
+    "slug": "1-korintus",
+    "file": "46-1-korintus.json",
+    "chapters": 16
+  },
+  {
+    "bnumber": 47,
+    "name": "2 Korintus",
+    "slug": "2-korintus",
+    "file": "47-2-korintus.json",
+    "chapters": 13
+  },
+  {
+    "bnumber": 48,
+    "name": "Galatia",
+    "slug": "galatia",
+    "file": "48-galatia.json",
+    "chapters": 6
+  },
+  {
+    "bnumber": 49,
+    "name": "Efesus",
+    "slug": "efesus",
+    "file": "49-efesus.json",
+    "chapters": 6
+  },
+  {
+    "bnumber": 50,
+    "name": "Filipi",
+    "slug": "filipi",
+    "file": "50-filipi.json",
+    "chapters": 4
+  },
+  {
+    "bnumber": 51,
+    "name": "Kolose",
+    "slug": "kolose",
+    "file": "51-kolose.json",
+    "chapters": 4
+  },
+  {
+    "bnumber": 52,
+    "name": "1 Tesalonika",
+    "slug": "1-tesalonika",
+    "file": "52-1-tesalonika.json",
+    "chapters": 5
+  },
+  {
+    "bnumber": 53,
+    "name": "2 Tesalonika",
+    "slug": "2-tesalonika",
+    "file": "53-2-tesalonika.json",
+    "chapters": 3
+  },
+  {
+    "bnumber": 54,
+    "name": "1 Timotius",
+    "slug": "1-timotius",
+    "file": "54-1-timotius.json",
+    "chapters": 6
+  },
+  {
+    "bnumber": 55,
+    "name": "2 Timotius",
+    "slug": "2-timotius",
+    "file": "55-2-timotius.json",
+    "chapters": 4
+  },
+  {
+    "bnumber": 56,
+    "name": "Titus",
+    "slug": "titus",
+    "file": "56-titus.json",
+    "chapters": 3
+  },
+  {
+    "bnumber": 57,
+    "name": "Filemon",
+    "slug": "filemon",
+    "file": "57-filemon.json",
+    "chapters": 1
+  },
+  {
+    "bnumber": 58,
+    "name": "Ibrani",
+    "slug": "ibrani",
+    "file": "58-ibrani.json",
+    "chapters": 13
+  },
+  {
+    "bnumber": 59,
+    "name": "Yakobus",
+    "slug": "yakobus",
+    "file": "59-yakobus.json",
+    "chapters": 5
+  },
+  {
+    "bnumber": 60,
+    "name": "1 Petrus",
+    "slug": "1-petrus",
+    "file": "60-1-petrus.json",
+    "chapters": 5
+  },
+  {
+    "bnumber": 61,
+    "name": "2 Petrus",
+    "slug": "2-petrus",
+    "file": "61-2-petrus.json",
+    "chapters": 3
+  },
+  {
+    "bnumber": 62,
+    "name": "1 Yohanes",
+    "slug": "1-yohanes",
+    "file": "62-1-yohanes.json",
+    "chapters": 5
+  },
+  {
+    "bnumber": 63,
+    "name": "2 Yohanes",
+    "slug": "2-yohanes",
+    "file": "63-2-yohanes.json",
+    "chapters": 1
+  },
+  {
+    "bnumber": 64,
+    "name": "3 Yohanes",
+    "slug": "3-yohanes",
+    "file": "64-3-yohanes.json",
+    "chapters": 1
+  },
+  {
+    "bnumber": 65,
+    "name": "Yudas",
+    "slug": "yudas",
+    "file": "65-yudas.json",
+    "chapters": 1
+  },
+  {
+    "bnumber": 66,
+    "name": "Wahyu",
+    "slug": "wahyu",
+    "file": "66-wahyu.json",
+    "chapters": 22
+  }
+]

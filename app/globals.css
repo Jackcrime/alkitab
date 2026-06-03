@@ -1,0 +1,113 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,300;1,400&family=Inter:wght@400;500;600&display=swap');
+
+@layer base {
+  :root {
+    /* shadcn CSS vars (hsl format) */
+    --background:          48 33% 95%;    /* #F8F4E9 ivory */
+    --foreground:          220 26% 24%;   /* #2D3748 charcoal */
+    --card:                48 50% 98%;    /* #FDFBF4 */
+    --card-foreground:     220 26% 24%;
+    --popover:             48 50% 98%;
+    --popover-foreground:  220 26% 24%;
+    --primary:             173 83% 25%;   /* #0F766E teal */
+    --primary-foreground:  166 77% 97%;   /* near-white on teal */
+    --secondary:           42 30% 86%;    /* warm subtle */
+    --secondary-foreground:220 26% 24%;
+    --muted:               42 30% 86%;
+    --muted-foreground:    215 16% 47%;   /* #718096 */
+    --accent:              166 77% 97%;   /* #F0FDFA teal-50 */
+    --accent-foreground:   173 83% 25%;
+    --destructive:         0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border:              37 24% 86%;    /* #E4DDD0 */
+    --input:               37 24% 86%;
+    --ring:                173 83% 25%;
+    --radius:              0.625rem;
+
+    /* Reading vars */
+    --font-sans:  "Inter", system-ui, sans-serif;
+    --font-serif: "Merriweather", Georgia, serif;
+    --verse-size: 1rem;
+    --verse-lh:   1.85;
+    --nav-h:      56px;
+  }
+
+  .dark {
+    --background:          222 47% 11%;   /* #111827 */
+    --foreground:          33 25% 87%;    /* #EDE4D4 */
+    --card:                217 33% 17%;   /* #1A2535 */
+    --card-foreground:     33 25% 87%;
+    --popover:             217 33% 17%;
+    --popover-foreground:  33 25% 87%;
+    --primary:             174 77% 57%;   /* #2DD4BF teal-400 */
+    --primary-foreground:  222 47% 11%;
+    --secondary:           215 28% 17%;
+    --secondary-foreground:33 25% 87%;
+    --muted:               215 28% 17%;
+    --muted-foreground:    215 20% 65%;   /* #9CA3AF */
+    --accent:              168 60% 12%;   /* dark teal bg */
+    --accent-foreground:   174 77% 57%;
+    --destructive:         0 63% 31%;
+    --destructive-foreground: 0 0% 98%;
+    --border:              215 28% 17%;
+    --input:               215 28% 17%;
+    --ring:                174 77% 57%;
+  }
+}
+
+@layer base {
+  * { @apply border-border box-border m-0 p-0; }
+  html { @apply scroll-smooth; }
+  body {
+    @apply bg-background text-foreground min-h-dvh;
+    font-family: var(--font-sans);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+}
+
+/* ── Font sizes ────────────────────────────────────────────────────────────── */
+[data-font-size="sm"] { --verse-size: 0.875rem;  --verse-lh: 1.75; }
+[data-font-size="md"] { --verse-size: 1rem;       --verse-lh: 1.85; }
+[data-font-size="lg"] { --verse-size: 1.125rem;  --verse-lh: 1.9;  }
+[data-font-size="xl"] { --verse-size: 1.25rem;   --verse-lh: 1.95; }
+
+/* ── Highlight colors ──────────────────────────────────────────────────────── */
+.hl-yellow { background: rgba(251,191,36,0.28); }
+.hl-green  { background: rgba(52,211,153,0.22); }
+.hl-blue   { background: rgba(96,165,250,0.22); }
+.hl-pink   { background: rgba(244,114,182,0.22);}
+.hl-purple { background: rgba(167,139,250,0.22);}
+.dark .hl-yellow { background: rgba(251,191,36,0.18); }
+.dark .hl-green  { background: rgba(52,211,153,0.15); }
+.dark .hl-blue   { background: rgba(96,165,250,0.15); }
+.dark .hl-pink   { background: rgba(244,114,182,0.15);}
+.dark .hl-purple { background: rgba(167,139,250,0.15);}
+
+/* ── Auto-hide UI ──────────────────────────────────────────────────────────── */
+.ui-header    { transition: transform 0.25s ease; }
+.ui-header.hidden    { transform: translateY(-100%); }
+.ui-bottomnav { transition: transform 0.25s ease; }
+.ui-bottomnav.hidden { transform: translateY(calc(100% + env(safe-area-inset-bottom, 0px))); }
+
+/* ── Verse typography ──────────────────────────────────────────────────────── */
+.verse-serif {
+  font-family: var(--font-serif);
+  font-size: var(--verse-size);
+  line-height: var(--verse-lh);
+  font-weight: 300;
+}
+
+/* ── Highlight search term ─────────────────────────────────────────────────── */
+mark { @apply bg-transparent font-bold text-primary; }
+
+/* ── Scrollbar ─────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar       { width: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { @apply bg-border rounded-full; }
+
+/* ── Keyframes ─────────────────────────────────────────────────────────────── */
+@keyframes spin { to { transform: rotate(360deg); } }
