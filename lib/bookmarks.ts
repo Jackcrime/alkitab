@@ -1,12 +1,13 @@
 import type { Version } from "./bible";
 
 export interface Bookmark {
-  id:       string;   // "{version}-{slug}-{chapter}"
+  id:       string;   // "{version}-{slug}-{chapter}-{verse}"
   version:  Version;
   slug:     string;
   bookName: string;
   chapter:  number;
-  savedAt:  number;   // Date.now()
+  verse:    number;   // 1-based verse number
+  savedAt:  number;
 }
 
 const KEY = "alkitab:bookmarks";
@@ -24,37 +25,57 @@ function save(bms: Bookmark[]) {
   localStorage.setItem(KEY, JSON.stringify(bms));
 }
 
+function makeId(version: Version, slug: string, chapter: number, verse: number) {
+  return `${version}-${slug}-${chapter}-${verse}`;
+}
+
 export function getBookmarks(): Bookmark[] {
   return load().sort((a, b) => b.savedAt - a.savedAt);
 }
 
-export function makeId(version: Version, slug: string, chapter: number) {
-  return `${version}-${slug}-${chapter}`;
+/** Returns set of 1-based verse numbers that are bookmarked in this chapter */
+export function getChapterBookmarks(
+  version: Version,
+  slug: string,
+  chapter: number,
+): Set<number> {
+  return new Set(
+    load()
+      .filter(b => b.version === version && b.slug === slug && b.chapter === chapter)
+      .map(b => b.verse),
+  );
 }
 
-export function isBookmarked(version: Version, slug: string, chapter: number): boolean {
-  return load().some(b => b.id === makeId(version, slug, chapter));
+export function isVerseBookmarked(
+  version: Version,
+  slug: string,
+  chapter: number,
+  verse: number,
+): boolean {
+  return load().some(b => b.id === makeId(version, slug, chapter, verse));
 }
 
-export function addBookmark(bm: Omit<Bookmark, "id" | "savedAt">) {
-  const bms = load();
-  const id  = makeId(bm.version, bm.slug, bm.chapter);
-  if (bms.some(b => b.id === id)) return; // already exists
-  bms.push({ ...bm, id, savedAt: Date.now() });
-  save(bms);
-}
-
-export function removeBookmark(version: Version, slug: string, chapter: number) {
-  const id = makeId(version, slug, chapter);
-  save(load().filter(b => b.id !== id));
-}
-
-export function toggleBookmark(bm: Omit<Bookmark, "id" | "savedAt">): boolean {
-  if (isBookmarked(bm.version, bm.slug, bm.chapter)) {
-    removeBookmark(bm.version, bm.slug, bm.chapter);
+/** Toggle bookmark for a verse. Returns true if now bookmarked. */
+export function toggleVerseBookmark(
+  params: Omit<Bookmark, "id" | "savedAt">,
+): boolean {
+  const id      = makeId(params.version, params.slug, params.chapter, params.verse);
+  const current = load();
+  const exists  = current.some(b => b.id === id);
+  if (exists) {
+    save(current.filter(b => b.id !== id));
     return false;
   } else {
-    addBookmark(bm);
+    save([...current, { ...params, id, savedAt: Date.now() }]);
     return true;
   }
+}
+
+export function removeBookmark(
+  version: Version,
+  slug: string,
+  chapter: number,
+  verse: number,
+) {
+  save(load().filter(b => b.id !== makeId(version, slug, chapter, verse)));
 }

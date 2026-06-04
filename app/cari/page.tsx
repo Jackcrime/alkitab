@@ -10,14 +10,17 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
 import { SettingsPanel } from "@/components/SettingsPanel"
-import { VERSIONS, searchBible, highlightQuery, type SearchResult, type Version } from "@/lib/bible"
+import { VERSIONS, searchBible, highlightQuery, isOldTestament, type SearchResult, type Version } from "@/lib/bible"
 import { parseReference, refToUrl } from "@/lib/reference-parser"
 import { addSearchHistory, getSearchHistory, removeSearchHistory } from "@/lib/storage"
 import { cn } from "@/lib/utils"
 
+type Section = "ALL" | "PL" | "PB"
+
 export default function SearchPage() {
   const [query,    setQuery]    = useState("")
   const [version,  setVersion]  = useState<Version>("TB")
+  const [section,  setSection]  = useState<Section>("ALL")
   const [results,  setResults]  = useState<SearchResult[]>([])
   const [loading,  setLoading]  = useState(false)
   const [progress, setProgress] = useState<{ loaded: number; total: number } | null>(null)
@@ -58,6 +61,16 @@ export default function SearchPage() {
   function removeHist(h: string) { removeSearchHistory(h); setHistory(getSearchHistory()) }
   function clearAllHist() { localStorage.removeItem("alkitab:searchhist"); setHistory([]) }
 
+  // Filter results by PL/PB section
+  const filteredResults = results.filter(r => {
+    if (section === "ALL") return true
+    if (section === "PL")  return isOldTestament(r.bnumber)
+    return !isOldTestament(r.bnumber)
+  })
+
+  const plCount  = results.filter(r => isOldTestament(r.bnumber)).length
+  const pbCount  = results.filter(r => !isOldTestament(r.bnumber)).length
+
   return (
     <div className="min-h-dvh bg-background">
       {/* Header */}
@@ -85,8 +98,9 @@ export default function SearchPage() {
           )}
         </div>
 
-        {/* Version tabs */}
-        <div className="flex gap-1.5">
+        {/* Version + PL/PB tabs */}
+        <div className="flex gap-1.5 flex-wrap">
+          {/* Version */}
           {VERSIONS.map(v => (
             <button key={v.code} onClick={() => handleVersion(v.code)}
               className={cn(
@@ -96,6 +110,26 @@ export default function SearchPage() {
                   : "bg-transparent text-muted-foreground border-border hover:bg-muted"
               )}>
               {v.label}
+            </button>
+          ))}
+
+          {/* Divider */}
+          <div className="w-px bg-border self-stretch mx-0.5" />
+
+          {/* PL/PB section filter — only visible when there are results */}
+          {(["ALL", "PL", "PB"] as Section[]).map(s => (
+            <button key={s} onClick={() => setSection(s)}
+              className={cn(
+                "px-2.5 py-1 rounded-md text-xs font-semibold border transition-all",
+                section === s
+                  ? "bg-secondary text-secondary-foreground border-secondary"
+                  : "bg-transparent text-muted-foreground border-border hover:bg-muted"
+              )}>
+              {s === "ALL"
+                ? `Semua${results.length > 0 ? ` (${results.length})` : ""}`
+                : s === "PL"
+                ? `PL${plCount > 0 ? ` (${plCount})` : ""}`
+                : `PB${pbCount > 0 ? ` (${pbCount})` : ""}`}
             </button>
           ))}
         </div>
@@ -191,24 +225,29 @@ export default function SearchPage() {
         )}
 
         {/* No results */}
-        {!loading && searched && results.length === 0 && !parsedRef && (
+        {!loading && searched && filteredResults.length === 0 && !parsedRef && (
           <div className="flex flex-col items-center gap-1.5 py-20">
-            <p className="text-sm text-muted-foreground">Tidak ditemukan</p>
-            <p className="text-xs text-muted-foreground/60">Coba kata lain</p>
+            <p className="text-sm text-muted-foreground">
+              {results.length > 0 ? `Tidak ada di ${section}` : "Tidak ditemukan"}
+            </p>
+            <p className="text-xs text-muted-foreground/60">
+              {results.length > 0 ? `${results.length} hasil di bagian lain` : "Coba kata lain"}
+            </p>
           </div>
         )}
 
         {/* Result count */}
-        {!loading && results.length > 0 && (
+        {!loading && filteredResults.length > 0 && (
           <div className="px-4 py-2">
             <p className="text-[11px] text-muted-foreground">
-              {results.length} hasil untuk &ldquo;{query}&rdquo;
+              {filteredResults.length} hasil untuk &ldquo;{query}&rdquo;
+              {section !== "ALL" && ` · ${section}`}
             </p>
           </div>
         )}
 
         {/* Results */}
-        {results.map((r, idx) => (
+        {filteredResults.map((r, idx) => (
           <div key={idx}>
             <Link href={`/${version}/${r.bookSlug}/${r.chapter}#v${r.verse}`}
               className="block px-4 py-3 hover:bg-muted/40 transition-colors">
@@ -217,11 +256,17 @@ export default function SearchPage() {
                   {r.bookName} {r.chapter}:{r.verse}
                 </span>
                 <Badge variant="outline" className="text-[9px] py-0 h-4">{version}</Badge>
+                <Badge variant="outline" className={cn(
+                  "text-[9px] py-0 h-4",
+                  isOldTestament(r.bnumber) ? "border-amber-500/40 text-amber-600 dark:text-amber-400" : "border-blue-500/40 text-blue-600 dark:text-blue-400"
+                )}>
+                  {isOldTestament(r.bnumber) ? "PL" : "PB"}
+                </Badge>
               </div>
               <p className="text-sm font-serif leading-relaxed text-foreground"
                 dangerouslySetInnerHTML={{ __html: highlightQuery(r.text, query) }} />
             </Link>
-            {idx < results.length - 1 && <Separator />}
+            {idx < filteredResults.length - 1 && <Separator />}
           </div>
         ))}
       </main>

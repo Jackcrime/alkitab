@@ -5,11 +5,13 @@ import { useRouter } from "next/navigation"
 import {
   ChevronDown, ChevronLeft, ChevronRight,
   Copy, Share2, X, MessageCircle, Send, Twitter,
+  Bookmark, BookmarkCheck, Trash2,
 } from "lucide-react"
 import Link from "next/link"
 import { Button }        from "@/components/ui/button"
 import { Skeleton }      from "@/components/ui/skeleton"
 import { Separator }     from "@/components/ui/separator"
+import { Badge }         from "@/components/ui/badge"
 import {
   DropdownMenu, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
@@ -18,7 +20,10 @@ import { SettingsPanel }         from "@/components/SettingsPanel"
 import { ShareDropdownContent }  from "@/components/ShareDropdown"
 import { BookChapterPicker }     from "@/components/BookChapterPicker"
 import { getChapter, getBookIndex, type Version, type BookMeta } from "@/lib/bible"
-import { toggleBookmark, isBookmarked }                          from "@/lib/bookmarks"
+import {
+  getChapterBookmarks, toggleVerseBookmark, removeBookmark, getBookmarks,
+  type Bookmark as BM,
+} from "@/lib/bookmarks"
 import { loadHighlights, toggleHighlight, HL_COLORS, HL_COLOR_KEYS, type HlColor } from "@/lib/highlights"
 import { shareNative, versePayload, chapterPayload, copyPayload, waLink, tgLink, xLink, type SharePayload } from "@/lib/share"
 import { saveLastRead }          from "@/lib/storage"
@@ -34,17 +39,21 @@ export default function ChapterPage({ params }: { params: { version: string; boo
   const touchStartX = useRef(0)
   const touchStartY = useRef(0)
 
-  const [verses,       setVerses]      = useState<string[]>([])
-  const [bookName,     setBookName]    = useState("")
-  const [bookIndex,    setBookIndex]   = useState<BookMeta[]>([])
-  const [loading,      setLoading]     = useState(true)
-  const [bookmarked,   setBookmarked]  = useState(false)
-  const [selected,     setSelected]    = useState<number | null>(null)
-  const [flashVerse,   setFlashVerse]  = useState<number | null>(null)
-  const [highlights,   setHighlights]  = useState<Record<number, HlColor>>({})
-  const [copied,       setCopied]      = useState(false)
-  const [sharePayload, setSharePayload]= useState<SharePayload | null>(null)
-  const [pickerOpen,   setPickerOpen]  = useState(false)
+  const [verses,           setVerses]          = useState<string[]>([])
+  const [bookName,         setBookName]         = useState("")
+  const [bookIndex,        setBookIndex]        = useState<BookMeta[]>([])
+  const [loading,          setLoading]          = useState(true)
+  const [selected,         setSelected]         = useState<number | null>(null)
+  const [flashVerse,       setFlashVerse]       = useState<number | null>(null)
+  const [highlights,       setHighlights]       = useState<Record<number, HlColor>>({})
+  const [copied,           setCopied]           = useState(false)
+  const [sharePayload,     setSharePayload]     = useState<SharePayload | null>(null)
+  const [pickerOpen,       setPickerOpen]       = useState(false)
+  // Verse-level bookmarks
+  const [bkVerses,         setBkVerses]         = useState<Set<number>>(new Set())
+  // All bookmarks list panel
+  const [bkSheetOpen,      setBkSheetOpen]      = useState(false)
+  const [allBookmarks,     setAllBookmarks]     = useState<BM[]>([])
 
   // ── Load ────────────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -54,7 +63,7 @@ export default function ChapterPage({ params }: { params: { version: string; boo
     Promise.all([getChapter(version, slug, chapter), getBookIndex(version)])
       .then(([{ verses, bookName }, index]) => {
         setVerses(verses); setBookName(bookName); setBookIndex(index)
-        setBookmarked(isBookmarked(version, slug, chapter))
+        setBkVerses(getChapterBookmarks(version, slug, chapter))
         setHighlights(loadHighlights(version, slug, chapter))
         saveLastRead({ version, slug, bookName, chapter })
 
@@ -85,7 +94,6 @@ export default function ChapterPage({ params }: { params: { version: string; boo
 
   // ── Actions ─────────────────────────────────────────────────────────────────
   const showCopied = () => { setCopied(true); setTimeout(() => setCopied(false), 2000) }
-  const handleBookmark = () => setBookmarked(toggleBookmark({ version, slug, bookName, chapter }))
 
   const handleHighlight = (idx: number, color: HlColor) => {
     setHighlights(toggleHighlight(version, slug, chapter, idx, color))
@@ -111,6 +119,35 @@ export default function ChapterPage({ params }: { params: { version: string; boo
     }
     showCopied()
   }
+
+  const handleVerseBookmark = (idx: number) => {
+    const verse = idx + 1
+    const nowBookmarked = toggleVerseBookmark({ version, slug, bookName, chapter, verse })
+    setBkVerses(prev => {
+      const next = new Set(prev)
+      if (nowBookmarked) next.add(verse)
+      else next.delete(verse)
+      return next
+    })
+    setSelected(null)
+  }
+
+  const openBookmarkSheet = () => {
+    setAllBookmarks(getBookmarks())
+    setBkSheetOpen(true)
+  }
+
+  const handleRemoveBookmark = (bm: BM) => {
+    removeBookmark(bm.version, bm.slug, bm.chapter, bm.verse)
+    setAllBookmarks(prev => prev.filter(b => b.id !== bm.id))
+    // refresh chapter bookmarks if same chapter
+    if (bm.version === version && bm.slug === slug && bm.chapter === chapter) {
+      setBkVerses(getChapterBookmarks(version, slug, chapter))
+    }
+  }
+
+  const fmtDate = (ts: number) =>
+    new Intl.DateTimeFormat("id-ID", { day:"numeric", month:"short" }).format(new Date(ts))
 
   return (
     <div
@@ -141,7 +178,7 @@ export default function ChapterPage({ params }: { params: { version: string; boo
           <div className="h-9 w-9 shrink-0" />
         )}
 
-        {/* Centered title — tappable → opens BookChapterPicker */}
+        {/* Centered title */}
         <button
           onClick={() => setPickerOpen(true)}
           className="flex-1 flex flex-col items-center justify-center py-1 rounded-lg hover:bg-muted/40 transition-colors min-w-0"
@@ -165,14 +202,23 @@ export default function ChapterPage({ params }: { params: { version: string; boo
           <div className="h-9 w-9 shrink-0" />
         )}
 
+        {/* Bookmark list icon */}
+        <button
+          onClick={openBookmarkSheet}
+          className="h-9 w-9 flex items-center justify-center shrink-0 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors relative"
+        >
+          <Bookmark className="h-4 w-4" />
+          {bkVerses.size > 0 && (
+            <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-primary" />
+          )}
+        </button>
+
         {/* Version + Settings */}
         <div className="flex items-center gap-0.5 shrink-0">
           <VersionSwitcher current={version} slug={slug} chapter={chapter} />
           <SettingsPanel chapter={{
-            bookmarked,
             copied,
             compareHref: `/compare/${slug}/${chapter}`,
-            onBookmark:  handleBookmark,
             onCopy:      () => handleCopy(),
             onShare:     () => handleShare(),
           }} />
@@ -196,9 +242,10 @@ export default function ChapterPage({ params }: { params: { version: string; boo
         ) : (
           <div className="space-y-0.5">
             {verses.map((text, i) => {
-              const hlColor = highlights[i] as HlColor | undefined
-              const isFlash = flashVerse === i
-              const isSel   = selected === i
+              const hlColor    = highlights[i] as HlColor | undefined
+              const isFlash    = flashVerse === i
+              const isSel      = selected === i
+              const isBookmarked = bkVerses.has(i + 1)
               return (
                 <div key={i} id={`v${i + 1}`}
                   onClick={() => setSelected(isSel ? null : i)}
@@ -209,8 +256,12 @@ export default function ChapterPage({ params }: { params: { version: string; boo
                     !isFlash && !isSel && hlColor && `hl-${hlColor}`,
                     !isFlash && !isSel && !hlColor && "hover:bg-muted/50",
                   )}>
-                  <span className="text-primary/50 text-[0.6rem] font-bold font-sans w-5 text-right shrink-0 pt-1 leading-none select-none">
+                  {/* Verse number + bookmark indicator */}
+                  <span className="relative text-primary/50 text-[0.6rem] font-bold font-sans w-5 text-right shrink-0 pt-1 leading-none select-none">
                     {i + 1}
+                    {isBookmarked && (
+                      <span className="absolute -top-0.5 -right-0.5 w-1 h-1 rounded-full bg-primary" />
+                    )}
                   </span>
                   <span className="verse-serif text-foreground">{text}</span>
                 </div>
@@ -223,7 +274,7 @@ export default function ChapterPage({ params }: { params: { version: string; boo
       {/* ── Verse action bar ───────────────────────────────────────────────── */}
       {selected !== null && (
         <div className="fixed bottom-6 inset-x-3 z-50 flex items-center justify-between gap-2 px-3 py-2.5 bg-background border border-border rounded-2xl shadow-xl">
-          <span className="text-xs text-muted-foreground truncate max-w-[90px]">
+          <span className="text-xs text-muted-foreground truncate max-w-[80px]">
             {bookName} {chapter}:{selected + 1}
           </span>
           <div className="flex items-center gap-1.5">
@@ -237,7 +288,14 @@ export default function ChapterPage({ params }: { params: { version: string; boo
                 style={{ background: HL_COLORS[color].swatch }}
               />
             ))}
-            <Separator orientation="vertical" className="h-4 mx-1" />
+            <Separator orientation="vertical" className="h-4 mx-0.5" />
+            {/* Bookmark toggle */}
+            <Button variant="ghost" size="sm" className="h-7 px-2 text-xs gap-1"
+              onClick={() => handleVerseBookmark(selected)}>
+              {bkVerses.has(selected + 1)
+                ? <BookmarkCheck className="h-3 w-3 text-primary" fill="currentColor" />
+                : <Bookmark className="h-3 w-3" />}
+            </Button>
             <Button variant="ghost" size="sm" className="h-7 px-2 text-xs gap-1"
               onClick={() => handleCopy(selected)}>
               <Copy className="h-3 w-3" /> Salin
@@ -261,15 +319,10 @@ export default function ChapterPage({ params }: { params: { version: string; boo
         </div>
       )}
 
-      {/* ── Chapter-level share panel (fallback when native share unavailable) */}
+      {/* ── Chapter-level share panel ─────────────────────────────────────── */}
       {sharePayload && selected === null && (
         <>
-          {/* backdrop */}
-          <div
-            className="fixed inset-0 z-50 bg-black/30"
-            onClick={() => setSharePayload(null)}
-          />
-          {/* sheet */}
+          <div className="fixed inset-0 z-50 bg-black/30" onClick={() => setSharePayload(null)} />
           <div className="fixed bottom-0 inset-x-0 z-50 bg-background rounded-t-2xl border-t border-border shadow-2xl pb-[env(safe-area-inset-bottom,0px)]">
             <div className="flex items-center justify-between px-4 pt-4 pb-3">
               <p className="font-semibold text-sm text-foreground">Bagikan ke</p>
@@ -284,27 +337,79 @@ export default function ChapterPage({ params }: { params: { version: string; boo
                 onClick={async () => { await copyPayload(sharePayload); showCopied(); setSharePayload(null) }}
                 className="flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors text-left text-sm"
               >
-                <Copy className="h-4 w-4 text-muted-foreground shrink-0" />
-                Salin teks
+                <Copy className="h-4 w-4 text-muted-foreground shrink-0" /> Salin teks
               </button>
               <a href={waLink(`${sharePayload.text}\n${sharePayload.url}`)} target="_blank" rel="noopener noreferrer"
                 onClick={() => setSharePayload(null)}
                 className="flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors text-sm">
-                <MessageCircle className="h-4 w-4 text-muted-foreground shrink-0" />
-                WhatsApp
+                <MessageCircle className="h-4 w-4 text-muted-foreground shrink-0" /> WhatsApp
               </a>
               <a href={tgLink(sharePayload.text, sharePayload.url)} target="_blank" rel="noopener noreferrer"
                 onClick={() => setSharePayload(null)}
                 className="flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors text-sm">
-                <Send className="h-4 w-4 text-muted-foreground shrink-0" />
-                Telegram
+                <Send className="h-4 w-4 text-muted-foreground shrink-0" /> Telegram
               </a>
               <a href={xLink(sharePayload.text, sharePayload.url)} target="_blank" rel="noopener noreferrer"
                 onClick={() => setSharePayload(null)}
                 className="flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors text-sm">
-                <Twitter className="h-4 w-4 text-muted-foreground shrink-0" />
-                X / Twitter
+                <Twitter className="h-4 w-4 text-muted-foreground shrink-0" /> X / Twitter
               </a>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* ── Bookmark list panel ───────────────────────────────────────────── */}
+      {bkSheetOpen && (
+        <>
+          <div className="fixed inset-0 z-50 bg-black/30" onClick={() => setBkSheetOpen(false)} />
+          <div className="fixed bottom-0 inset-x-0 z-50 bg-background rounded-t-2xl border-t border-border shadow-2xl pb-[env(safe-area-inset-bottom,0px)] max-h-[70dvh] flex flex-col">
+            <div className="flex items-center justify-between px-4 pt-4 pb-3 shrink-0">
+              <div>
+                <p className="font-semibold text-sm text-foreground">Bookmark</p>
+                {allBookmarks.length > 0 && (
+                  <p className="text-[10px] text-muted-foreground mt-0.5">{allBookmarks.length} ayat tersimpan</p>
+                )}
+              </div>
+              <button onClick={() => setBkSheetOpen(false)}
+                className="h-7 w-7 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+            <Separator />
+            <div className="overflow-y-auto flex-1">
+              {allBookmarks.length === 0 ? (
+                <div className="flex flex-col items-center gap-2 py-12">
+                  <Bookmark className="h-7 w-7 text-muted-foreground/40" />
+                  <p className="text-sm text-muted-foreground">Belum ada bookmark</p>
+                  <p className="text-xs text-muted-foreground/60">Pilih ayat → tap ikon bookmark</p>
+                </div>
+              ) : (
+                allBookmarks.map((bm, idx) => (
+                  <div key={bm.id}>
+                    <div className="flex items-center gap-3 px-4 py-3">
+                      <Link
+                        href={`/${bm.version}/${bm.slug}/${bm.chapter}#v${bm.verse}`}
+                        onClick={() => setBkSheetOpen(false)}
+                        className="flex-1 min-w-0"
+                      >
+                        <div className="flex items-center gap-1.5 mb-0.5">
+                          <p className="text-sm font-semibold text-foreground">
+                            {bm.bookName} {bm.chapter}:{bm.verse}
+                          </p>
+                          <Badge variant="outline" className="text-[9px] py-0 h-4">{bm.version}</Badge>
+                        </div>
+                        <p className="text-[10px] text-muted-foreground">{fmtDate(bm.savedAt)}</p>
+                      </Link>
+                      <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive shrink-0"
+                        onClick={() => handleRemoveBookmark(bm)}>
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                    {idx < allBookmarks.length - 1 && <Separator />}
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </>

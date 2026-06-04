@@ -73,6 +73,7 @@ export async function getChapter(
 export interface SearchResult {
   bookName:  string;
   bookSlug:  string;
+  bnumber:   number;  // 1-39 = PL, 40-66 = PB
   chapter:   number;
   verse:     number;
   text:      string;
@@ -108,6 +109,7 @@ export async function searchBible(
             results.push({
               bookName: meta.name,
               bookSlug: meta.slug,
+              bnumber:  meta.bnumber,
               chapter:  ci + 1,
               verse:    vi + 1,
               text:     chapter[vi],

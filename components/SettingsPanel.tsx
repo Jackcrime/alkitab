@@ -3,7 +3,7 @@ import { useState, useEffect } from "react"
 import { useTheme } from "next-themes"
 import {
   Settings, Sun, Moon, Monitor,
-  Copy, Share2, Bookmark, BookmarkCheck, Columns2, Check,
+  Copy, Share2, Columns2, Check,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -27,10 +27,8 @@ const THEMES = [
 ] as const
 
 export interface ChapterActions {
-  bookmarked:   boolean
   copied:       boolean
   compareHref:  string
-  onBookmark:   () => void
   onCopy:       () => void
   onShare:      () => void
 }
@@ -80,15 +78,6 @@ export function SettingsPanel({ chapter }: Props) {
               >
                 <Share2 className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                 Bagikan
-              </button>
-              <button
-                onClick={chapter.onBookmark}
-                className="flex items-center gap-2.5 w-full px-2.5 py-2 rounded-md text-sm text-foreground hover:bg-muted transition-colors text-left"
-              >
-                {chapter.bookmarked
-                  ? <BookmarkCheck className="h-3.5 w-3.5 text-primary shrink-0" fill="currentColor" />
-                  : <Bookmark className="h-3.5 w-3.5 text-muted-foreground shrink-0" />}
-                {chapter.bookmarked ? "Hapus Bookmark" : "Bookmark Pasal"}
               </button>
               <Link
                 href={chapter.compareHref}
