@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
-import { BottomNav } from "@/components/BottomNav"
 import { getChapter, VERSIONS, type Version } from "@/lib/bible"
 import { cn } from "@/lib/utils"
 
@@ -72,7 +71,7 @@ export default function ComparePage({ params }: { params: { book: string; chapte
       </header>
 
       {/* Verses */}
-      <main className="pb-24">
+      <main className="pb-8">
         {loading ? (
           <div className="px-4 py-4 space-y-4">
             {Array.from({length:5}).map((_,i)=>(
@@ -123,7 +122,6 @@ export default function ComparePage({ params }: { params: { book: string; chapte
         </div>
       </main>
 
-      <BottomNav />
     </div>
   )
 }

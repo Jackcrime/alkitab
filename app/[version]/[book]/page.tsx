@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation"
 import { ChevronLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
-import { BottomNav } from "@/components/BottomNav"
 import { VersionSwitcher } from "@/components/VersionSwitcher"
 import { SettingsPanel } from "@/components/SettingsPanel"
 import { getBookIndex, type BookMeta, type Version } from "@/lib/bible"
@@ -46,7 +45,7 @@ export default function ChapterListPage({ params }: { params: { version: string;
         </div>
       </header>
 
-      <main className="p-4 pb-24">
+      <main className="p-4 pb-8">
         {loading ? (
           <div className="grid grid-cols-5 sm:grid-cols-8 gap-2">
             {Array.from({length:20}).map((_,i) => (
@@ -72,7 +71,6 @@ export default function ChapterListPage({ params }: { params: { version: string;
         )}
       </main>
 
-      <BottomNav />
     </div>
   )
 }

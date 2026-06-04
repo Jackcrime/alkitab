@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { BottomNav } from "@/components/BottomNav"
 import { SettingsPanel } from "@/components/SettingsPanel"
 import { getBookmarks, removeBookmark, type Bookmark as BM } from "@/lib/bookmarks"
 
@@ -30,7 +29,7 @@ export default function BookmarkPage() {
         <SettingsPanel />
       </header>
 
-      <main className="pb-24">
+      <main className="pb-8">
         {bookmarks.length === 0 ? (
           <div className="flex flex-col items-center gap-3 py-24">
             <div className="w-14 h-14 rounded-2xl bg-muted flex items-center justify-center">
@@ -71,7 +70,6 @@ export default function BookmarkPage() {
           </>
         )}
       </main>
-      <BottomNav />
     </div>
   )
 }

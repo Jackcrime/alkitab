@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
-import { BottomNav } from "@/components/BottomNav"
 import { SettingsPanel } from "@/components/SettingsPanel"
 import { VERSIONS, searchBible, highlightQuery, type SearchResult, type Version } from "@/lib/bible"
 import { parseReference, refToUrl } from "@/lib/reference-parser"
@@ -102,7 +101,7 @@ export default function SearchPage() {
         </div>
       </header>
 
-      <main className="pb-24">
+      <main className="pb-8">
         {/* Reference detected */}
         {parsedRef && (
           <div className="px-4 py-4">
@@ -227,7 +226,6 @@ export default function SearchPage() {
         ))}
       </main>
 
-      <BottomNav />
     </div>
   )
 }

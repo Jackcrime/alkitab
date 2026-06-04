@@ -8,7 +8,6 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Separator } from "@/components/ui/separator"
-import { BottomNav } from "@/components/BottomNav"
 import { VersionSwitcher } from "@/components/VersionSwitcher"
 import { SettingsPanel } from "@/components/SettingsPanel"
 import { getBookIndex, isOldTestament, type BookMeta, type Version } from "@/lib/bible"
@@ -85,7 +84,7 @@ export default function BookListPage({ params }: { params: { version: string } }
             </TabsList>
 
             {/* ── Book lists (inside Tabs so tabs work, but rendered below header) */}
-            <div className="pb-24">
+            <div className="pb-8">
               <TabsContent value="PL" className="mt-0">
                 <BookList books={pl} version={version} />
               </TabsContent>
@@ -105,7 +104,6 @@ export default function BookListPage({ params }: { params: { version: string } }
         )}
       </header>
 
-      <BottomNav />
     </div>
   )
 }
