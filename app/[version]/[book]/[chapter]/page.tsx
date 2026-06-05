@@ -238,7 +238,6 @@ export default function ChapterPage({ params }: {
           className="flex-1 flex flex-col items-center justify-center py-1 rounded-lg hover:bg-muted/40 transition-colors min-w-0">
           <span className="font-semibold text-sm text-foreground truncate leading-tight flex items-center gap-1">
             {loading ? "Memuat..." : `${bookName} ${chapter}`}
-            <ChevronDown className="h-3 w-3 text-muted-foreground shrink-0" />
           </span>
           <span className="text-[10px] text-muted-foreground leading-tight">
             {!loading && `${verses.length} ayat`}
@@ -309,55 +308,77 @@ export default function ChapterPage({ params }: {
 
       {/* ── Multi-select action bar ─────────────────────────────────────── */}
       {selected.size > 0 && (
-        <div className="fixed bottom-0 inset-x-0 z-40 bg-background/96 backdrop-blur-sm border-t border-border">
-          <div className="flex items-center gap-2 px-3 py-3 max-w-[660px] mx-auto">
-            {/* Count */}
-            <span className="text-xs font-medium text-muted-foreground shrink-0 min-w-[52px]">
-              {selected.size} dipilih
-            </span>
+        <div className="fixed bottom-0 inset-x-0 z-40 bg-background border-t border-border">
+          <div className="flex items-center px-3 py-3 max-w-[660px] mx-auto">
 
-            {/* Highlight colors */}
-            <div className="flex items-center gap-1.5 shrink-0">
-              {HL_COLOR_KEYS.map(color => (
-                <button key={color}
-                  onClick={() => handleHighlight(color)}
-                  title={color}
-                  className={cn(
-                    "w-5 h-5 rounded-full border-2 transition-all active:scale-110",
-                    allSameColor === color ? "border-foreground scale-110" : "border-transparent"
-                  )}
-                  style={{ background: HL_COLORS[color].swatch }}
-                />
-              ))}
+            {/* LEFT */}
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-medium text-muted-foreground shrink-0 min-w-[52px]">
+                {selected.size} dipilih
+              </span>
+
+              <div className="flex items-center gap-1.5">
+                {HL_COLOR_KEYS.map(color => (
+                  <button
+                    key={color}
+                    onClick={() => handleHighlight(color)}
+                    title={color}
+                    className={cn(
+                      "w-5 h-5 rounded-full border-2 transition-all active:scale-110",
+                      allSameColor === color
+                        ? "border-foreground scale-110"
+                        : "border-transparent"
+                    )}
+                    style={{ background: HL_COLORS[color].swatch }}
+                  />
+                ))}
+              </div>
             </div>
 
-            <Separator orientation="vertical" className="h-5 mx-0.5 shrink-0" />
+            {/* RIGHT */}
+            <div className="ml-auto flex items-center gap-1">
+              <Separator
+                orientation="vertical"
+                className="h-5 mr-1"
+              />
 
-            {/* Bookmark */}
-            <button onClick={handleVerseBookmarks}
-              className="h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0">
-              {allSelectedBk
-                ? <BookmarkCheck className="h-4 w-4 text-primary" fill="currentColor" />
-                : <Bookmark className="h-4 w-4" />}
-            </button>
+              <button
+                onClick={handleVerseBookmarks}
+                className="h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              >
+                {allSelectedBk ? (
+                  <BookmarkCheck
+                    className="h-4 w-4 text-primary"
+                    fill="currentColor"
+                  />
+                ) : (
+                  <Bookmark className="h-4 w-4" />
+                )}
+              </button>
 
-            {/* Copy */}
-            <button onClick={handleCopySelected}
-              className="h-8 px-2.5 rounded-lg flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0">
-              <Copy className="h-3.5 w-3.5" /> Salin
-            </button>
+              <button
+                onClick={handleCopySelected}
+                className="h-8 px-2.5 rounded-lg flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              >
+                <Copy className="h-3.5 w-3.5" />
+                Salin
+              </button>
 
-            {/* Share */}
-            <button onClick={handleShareSelected}
-              className="h-8 px-2.5 rounded-lg flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0">
-              <Share2 className="h-3.5 w-3.5" />
-            </button>
+              <button
+                onClick={handleShareSelected}
+                className="h-8 px-2.5 rounded-lg flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              >
+                <Share2 className="h-3.5 w-3.5" />
+              </button>
 
-            {/* Cancel (right-aligned) */}
-            <button onClick={clearSelection}
-              className="ml-auto h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0">
-              <X className="h-4 w-4" />
-            </button>
+              <button
+                onClick={clearSelection}
+                className="h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
           </div>
         </div>
       )}
