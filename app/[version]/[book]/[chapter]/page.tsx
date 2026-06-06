@@ -6,7 +6,7 @@ import {
   ChevronDown, ChevronLeft, ChevronRight,
   Copy, Share2, X, MessageCircle, Send, Twitter,
   Bookmark, BookmarkCheck, Trash2, Check,
-  PenLine, ImageIcon, BookOpen,
+  PenLine, ImageIcon, BookOpen, Palette,
 } from "lucide-react"
 import Link      from "next/link"
 import { Button }   from "@/components/ui/button"
@@ -57,15 +57,17 @@ export default function ChapterPage({ params }: {
   const [flashVerse,   setFlashVerse]  = useState<number | null>(null)
   const [highlights,   setHighlights]  = useState<Record<number, HlColor>>({})
   const [copied,       setCopied]      = useState(false)
+  const [noteCopied,   setNoteCopied]  = useState(false)
   const [sharePayload, setSharePayload] = useState<SharePayload | null>(null)
   const [pickerOpen,   setPickerOpen]  = useState(false)
 
-  // Focus mode state
+  // Focus mode
   const [focusMode, setFocusModeLocal] = useState(false)
   const [revealX,   setRevealX]        = useState(false)
 
   // Multi-select
   const [selected,     setSelected]    = useState<Set<number>>(new Set())
+  const [showColors,   setShowColors]  = useState(false)
 
   // Bookmarks
   const [bkVerses,     setBkVerses]    = useState<Set<number>>(new Set())
@@ -93,7 +95,6 @@ export default function ChapterPage({ params }: {
         setHighlights(loadHighlights(version, slug, chapter))
         saveLastRead({ version, slug, bookName, chapter })
         markChapterRead(version, slug, chapter)
-        // Load notes async
         getChapterNoteVerses(version, slug, chapter).then(setNoteVerses)
 
         const hash = window.location.hash
@@ -110,7 +111,7 @@ export default function ChapterPage({ params }: {
       .finally(() => setLoading(false))
   }, [version, slug, chapter])
 
-  // ── Focus mode: init dari localStorage + listen toggle ──────────────────
+  // ── Focus mode: init + listen ────────────────────────────────────────────
   useEffect(() => {
     setFocusModeLocal(getFocusMode())
     const handler = (e: Event) => {
@@ -120,7 +121,7 @@ export default function ChapterPage({ params }: {
     return () => window.removeEventListener("alkitab:focusmode", handler)
   }, [])
 
-  // Header hiding: focusMode → immediately hidden; scroll-hide disabled when focus off
+  // Header hiding: immediately hidden in focus mode
   const scrollHidden = useHideOnScroll(80, !focusMode)
   const headerHidden = focusMode || scrollHidden
 
@@ -149,7 +150,7 @@ export default function ChapterPage({ params }: {
     : `/${version}/${slug}/${chapter + 1}`
   const bookAbbr = BOOK_ABBR[slug] ?? bookName.slice(0, 4)
 
-  // Reset revealX whenever focus mode is toggled off
+  // Reset revealX when focus mode off
   useEffect(() => { if (!focusMode) setRevealX(false) }, [focusMode])
 
   // ── Keyboard navigation ──────────────────────────────────────────────────
@@ -182,12 +183,12 @@ export default function ChapterPage({ params }: {
 
   // ── Helpers ─────────────────────────────────────────────────────────────
   const showCopied   = () => { setCopied(true); setTimeout(() => setCopied(false), 2000) }
-  const clearSel     = ()  => setSelected(new Set())
+  const clearSel     = ()  => { setSelected(new Set()); setShowColors(false) }
   const toggleVerse  = (i: number) => setSelected(prev => {
     const n = new Set(prev); n.has(i) ? n.delete(i) : n.add(i); return n
   })
 
-  // ── Derived from multi-select ────────────────────────────────────────────
+  // ── Derived ──────────────────────────────────────────────────────────────
   const sortedSel     = Array.from(selected).sort((a, b) => a - b)
   const isSingle      = selected.size === 1
   const singleIdx     = isSingle ? sortedSel[0] : -1
@@ -297,7 +298,7 @@ export default function ChapterPage({ params }: {
         }
       }}
     >
-      {/* ── Header (focus mode: slides out on scroll down) ──────────────── */}
+      {/* ── Header ──────────────────────────────────────────────────────── */}
       <header className={cn(
         "sticky top-0 z-40 flex items-center gap-1 px-1 py-2 bg-background border-b border-border",
         "transition-transform duration-300 ease-in-out",
@@ -329,17 +330,15 @@ export default function ChapterPage({ params }: {
           : <div className="h-9 w-9 shrink-0" />}
 
         <SettingsPanel chapter={{
-          version,
-          slug,
-          chapter,
-          copied:      copied,
+          version, slug, chapter,
+          copied,
           compareHref: `/compare/${slug}/${chapter}`,
-          onCopy:      handleChapterCopy,
-          onShare:     handleChapterShare,
+          onCopy:  handleChapterCopy,
+          onShare: handleChapterShare,
         }} />
       </header>
 
-      {/* ── Verse list ─────────────────────────────────────────────────── */}
+      {/* ── Verse list ──────────────────────────────────────────────────── */}
       <main className="flex-1 px-5 pt-6 pb-36 max-w-[660px] mx-auto w-full">
         {loading ? (
           <div className="space-y-4">
@@ -356,34 +355,30 @@ export default function ChapterPage({ params }: {
         ) : (
           <div className="space-y-0.5">
             {verses.map((text, i) => {
-              const hlColor     = highlights[i] as HlColor | undefined
-              const isFlash     = flashVerse === i
-              const isSel       = selected.has(i)
+              const hlColor      = highlights[i] as HlColor | undefined
+              const isFlash      = flashVerse === i
+              const isSel        = selected.has(i)
               const isBookmarked = bkVerses.has(i + 1)
-              const hasNote     = noteVerses.has(i + 1)
+              const hasNote      = noteVerses.has(i + 1)
               return (
                 <div key={i} id={`v${i + 1}`}
                   onClick={() => toggleVerse(i)}
                   className={cn(
                     "flex gap-3 px-1.5 py-1 pb-3 rounded-md cursor-pointer transition-colors select-none",
-                    isFlash     && "bg-yellow-200/40 dark:bg-yellow-900/20",
-                    isSel       && "bg-primary/8",
+                    isFlash && "bg-yellow-200/40 dark:bg-yellow-900/20",
+                    isSel   && "bg-primary/8",
                     !isFlash && !isSel && hlColor && `hl-${hlColor}`,
                     !isFlash && !isSel && !hlColor && "hover:bg-muted/50",
                   )}>
-                  {/* Verse number + indicators */}
                   <span className={cn(
-                    "flex items-start justify-end w-5 shrink-0 pt-1",  // hapus 'relative' dari sini
+                    "flex items-start justify-end w-5 shrink-0 pt-1",
                     isSel ? "text-primary" : "text-primary/50",
                   )}>
-
-                    {/* Wrap inner jadi anchor untuk dot */}
                     <span className="relative">
                       {isSel
                         ? <Check className="h-3 w-3 mt-0.5" />
                         : <span className="text-[0.6rem] font-bold font-sans leading-none pr-[1px]">{i + 1}</span>
                       }
-
                       {!isSel && (hasNote || isBookmarked) && (
                         <div className="absolute top-full mt-0.5 right-0 flex items-center gap-0.5 z-10">
                           {hasNote && (
@@ -403,7 +398,6 @@ export default function ChapterPage({ params }: {
                         </div>
                       )}
                     </span>
-
                   </span>
                   <span className="verse-serif text-foreground">{text}</span>
                 </div>
@@ -413,87 +407,115 @@ export default function ChapterPage({ params }: {
         )}
       </main>
 
-      {/* ── Multi-select action bar ─────────────────────────────────────── */}
+      {/* ── Multi-select action bar ──────────────────────────────────────── */}
       {selected.size > 0 && (
         <div className="fixed bottom-0 inset-x-0 z-40 bg-background/95 backdrop-blur-sm border-t border-border">
-          {/* Tambahkan justify-between dan gap yang lebih besar di container utama */}
-          <div className="flex items-center justify-between px-3 py-3 max-w-[660px] mx-auto overflow-x-auto gap-4">
-            
-            {/* === GRUP KIRI: Jumlah Ayat & Highlight === */}
-            <div className="flex items-center gap-1.5 shrink-0">
-              {/* Count */}
+
+          {/* Desktop: color panel slides in above bar */}
+          {showColors && (
+            <div className="hidden md:flex items-center justify-center gap-3 px-4 py-2.5 border-b border-border/50">
+              {HL_COLOR_KEYS.map(color => (
+                <button key={color}
+                  onClick={() => { handleHighlight(color); setShowColors(false) }}
+                  className={cn(
+                    "w-9 h-9 rounded-full border-2 transition-all hover:scale-105 active:scale-110 shadow-md",
+                    allSameColor === color ? "border-foreground scale-110" : "border-transparent",
+                  )}
+                  style={{ background: HL_COLORS[color].swatch }}
+                />
+              ))}
+              <div className="w-px h-5 bg-border mx-1" />
+              <button onClick={() => setShowColors(false)}
+                className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          )}
+
+          {/* Main bar */}
+          <div className="relative overflow-hidden">
+
+            {/* Default buttons — morphs out on mobile when showColors */}
+            <div className={cn(
+              "flex items-center justify-between px-3 py-3 max-w-[660px] mx-auto gap-4",
+              "transition-all duration-200",
+              showColors && "opacity-0 -translate-x-2 pointer-events-none md:opacity-100 md:translate-x-0 md:pointer-events-auto",
+            )}>
               <span className="text-xs font-medium text-muted-foreground shrink-0 min-w-[50px]">
                 {selected.size} dipilih
               </span>
 
-              {/* Highlight colors */}
               <div className="flex items-center gap-1.5 shrink-0">
-                {HL_COLOR_KEYS.map(color => (
-                  <button key={color}
-                    onClick={() => handleHighlight(color)}
-                    className={cn(
-                      "w-5 h-5 rounded-full border-2 transition-all active:scale-110 shrink-0",
-                      allSameColor === color ? "border-foreground scale-110" : "border-transparent",
-                    )}
-                    style={{ background: HL_COLORS[color].swatch }}
-                  />
-                ))}
+                <button onClick={handleVerseBookmarks}
+                  className="h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0">
+                  {allSelectedBk
+                    ? <BookmarkCheck className="h-4 w-4 text-primary" fill="currentColor" />
+                    : <Bookmark className="h-4 w-4" />}
+                </button>
+
+                <button onClick={() => isSingle && openNoteEditor(singleIdx + 1)}
+                  className={cn(
+                    "h-8 w-8 rounded-lg flex items-center justify-center transition-colors shrink-0",
+                    isSingle ? "text-muted-foreground hover:text-foreground hover:bg-muted" : "text-muted-foreground/30 cursor-not-allowed"
+                  )}>
+                  <PenLine className={cn("h-4 w-4", singleHasNote && "text-amber-400")} />
+                </button>
+
+                <button onClick={() => isSingle && setCardVerse(singleIdx)}
+                  className={cn(
+                    "h-8 w-8 rounded-lg flex items-center justify-center transition-colors shrink-0",
+                    isSingle ? "text-muted-foreground hover:text-foreground hover:bg-muted" : "text-muted-foreground/30 cursor-not-allowed"
+                  )}>
+                  <ImageIcon className="h-4 w-4" />
+                </button>
+
+                <button onClick={handleCopySelected}
+                  className="h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0">
+                  <Copy className="h-3.5 w-3.5" />
+                </button>
+
+                <button onClick={handleShareSelected}
+                  className="h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0">
+                  <Share2 className="h-3.5 w-3.5" />
+                </button>
+
+                {/* Palette — opens color picker */}
+                <button onClick={() => setShowColors(v => !v)}
+                  className={cn(
+                    "h-8 w-8 rounded-lg flex items-center justify-center transition-colors shrink-0",
+                    showColors ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-muted",
+                  )}>
+                  <Palette className="h-4 w-4" />
+                </button>
+
+                <button onClick={clearSel}
+                  className="h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0">
+                  <X className="h-4 w-4" />
+                </button>
               </div>
             </div>
 
-            {/* === GRUP KANAN: Action Buttons & Cancel === */}
-            <div className="flex items-center gap-1.5 shrink-0">
-              {/* Bookmark */}
-              <button onClick={handleVerseBookmarks}
-                className="h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0">
-                {allSelectedBk
-                  ? <BookmarkCheck className="h-4 w-4 text-primary" fill="currentColor" />
-                  : <Bookmark className="h-4 w-4" />}
+            {/* Mobile: color picker overlay — morphs in */}
+            <div className={cn(
+              "md:hidden absolute inset-0 flex items-center justify-center gap-4 px-4 py-3",
+              "transition-all duration-200",
+              showColors ? "opacity-100 translate-x-0" : "opacity-0 translate-x-3 pointer-events-none",
+            )}>
+              <button onClick={() => setShowColors(false)}
+                className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors shrink-0">
+                <X className="h-3.5 w-3.5" />
               </button>
-
-              {/* Note — single verse only */}
-              <button
-                onClick={() => isSingle && openNoteEditor(singleIdx + 1)}
-                className={cn(
-                  "h-8 w-8 rounded-lg flex items-center justify-center transition-colors shrink-0",
-                  isSingle
-                    ? "text-muted-foreground hover:text-foreground hover:bg-muted"
-                    : "text-muted-foreground/30 cursor-not-allowed"
-                )}>
-                <PenLine className={cn("h-4 w-4", singleHasNote && "text-amber-400")} />
-              </button>
-
-              {/* Verse card — single verse only */}
-              <button
-                onClick={() => isSingle && setCardVerse(singleIdx)}
-                className={cn(
-                  "h-8 w-8 rounded-lg flex items-center justify-center transition-colors shrink-0",
-                  isSingle
-                    ? "text-muted-foreground hover:text-foreground hover:bg-muted"
-                    : "text-muted-foreground/30 cursor-not-allowed"
-                )}>
-                <ImageIcon className="h-4 w-4" />
-              </button>
-
-              {/* Copy */}
-              <button onClick={handleCopySelected}
-                className="h-8 px-2 rounded-lg flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0">
-                <Copy className="h-3.5 w-3.5" />
-              </button>
-
-              {/* Share */}
-              <button onClick={handleShareSelected}
-                className="h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0">
-                <Share2 className="h-3.5 w-3.5" />
-              </button>
-
-              {/* Cancel (dihilangkan ml-auto karena parent sudah diatur ke kanan) */}
-              <button onClick={clearSel}
-                className="h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0">
-                <X className="h-4 w-4" />
-              </button>
+              {HL_COLOR_KEYS.map(color => (
+                <button key={color}
+                  onClick={() => { handleHighlight(color); setShowColors(false) }}
+                  className={cn(
+                    "w-9 h-9 rounded-full border-2 transition-all active:scale-110 shadow-sm",
+                    allSameColor === color ? "border-foreground scale-110" : "border-transparent",
+                  )}
+                  style={{ background: HL_COLORS[color].swatch }}
+                />
+              ))}
             </div>
-
           </div>
         </div>
       )}
@@ -620,7 +642,27 @@ export default function ChapterPage({ params }: {
                   {bookName} {chapter}:{editingNote.verse}
                 </p>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-1.5">
+                {editingNote.text.length > 0 && (
+                  <Button size="sm" variant="ghost"
+                    className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                    title="Hapus teks"
+                    onClick={() => setEditingNote(prev => prev ? { ...prev, text: "" } : null)}>
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                )}
+                {editingNote.text.trim().length > 0 && (
+                  <Button size="sm" variant="ghost"
+                    className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+                    title="Salin catatan"
+                    onClick={async () => {
+                      await navigator.clipboard.writeText(editingNote.text.trim())
+                      setNoteCopied(true)
+                      setTimeout(() => setNoteCopied(false), 1800)
+                    }}>
+                    {noteCopied ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
+                  </Button>
+                )}
                 <Button size="sm" variant="ghost" className="h-8 text-xs"
                   onClick={() => setEditingNote(null)}>
                   Batal
@@ -692,15 +734,13 @@ export default function ChapterPage({ params }: {
         </>
       )}
 
-      {/* ── Focus mode floating bar ───────────────────────────────────── */}
+      {/* ── Focus mode floating bar ───────────────────────────────────────── */}
       {focusMode && (
         <div
           className="fixed right-4 z-30"
           style={{ bottom: selected.size > 0 ? "68px" : "24px", transition: "bottom 0.2s ease-out" }}
         >
           <div className="flex items-center bg-card border border-border rounded-2xl shadow-lg shadow-black/10 overflow-hidden">
-
-            {/* Prev */}
             {prevUrl ? (
               <Link href={prevUrl} title="Pasal sebelumnya"
                 className="h-10 w-9 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
@@ -712,7 +752,6 @@ export default function ChapterPage({ params }: {
               </div>
             )}
 
-            {/* Title: morphs into X overlay on hover (desktop) or two-tap (mobile) */}
             <button
               onClick={(e) => {
                 const isTouch = (e.nativeEvent as PointerEvent).pointerType === "touch"
@@ -721,7 +760,6 @@ export default function ChapterPage({ params }: {
               }}
               className="group/t relative h-10 px-2.5 overflow-hidden hover:bg-muted/60 transition-colors"
             >
-              {/* Text: slides up + fades out on reveal / hover */}
               <span className={cn(
                 "flex items-center gap-1.5 text-xs font-bold text-foreground select-none",
                 "transition-all duration-200",
@@ -733,8 +771,6 @@ export default function ChapterPage({ params }: {
                 <span className="md:hidden">{loading ? "..." : `${bookAbbr} ${chapter}`}</span>
                 <span className="hidden md:inline">{loading ? "..." : `${bookName} ${chapter}`}</span>
               </span>
-
-              {/* X: slides up + fades in on reveal / hover */}
               <span className={cn(
                 "absolute inset-0 flex items-center justify-center text-foreground pointer-events-none",
                 "transition-all duration-200",
@@ -746,7 +782,6 @@ export default function ChapterPage({ params }: {
               </span>
             </button>
 
-            {/* Next */}
             {nextUrl ? (
               <Link href={nextUrl} title="Pasal berikutnya"
                 className="h-10 w-9 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
