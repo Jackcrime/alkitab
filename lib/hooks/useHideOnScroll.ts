@@ -4,28 +4,31 @@ import { useState, useEffect, useRef } from "react";
 
 /**
  * Auto-hide UI on scroll down, reveal on scroll up.
- * Adds 400ms grace period on mount to prevent glitch during page load / hash navigation.
+ * - 450ms grace period on mount (prevents glitch during page load / hash nav)
+ * - `disabled=true` → always visible, cleans up listener immediately
  */
-export function useHideOnScroll(threshold = 80) {
+export function useHideOnScroll(threshold = 80, disabled = false) {
   const [hidden,  setHidden]  = useState(false);
   const lastY     = useRef(0);
-  const enabled   = useRef(false);
+  const ready     = useRef(false);
   const timer     = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    // Reset on every navigation
+    // Always reset when deps change
     setHidden(false);
-    enabled.current  = false;
-    lastY.current    = window.scrollY;
+    ready.current = false;
 
-    // Don't start watching until page has settled
+    if (disabled) return;
+
+    lastY.current = window.scrollY;
+
     timer.current = setTimeout(() => {
-      lastY.current   = window.scrollY;
-      enabled.current = true;
+      lastY.current = window.scrollY;
+      ready.current = true;
     }, 450);
 
     function onScroll() {
-      if (!enabled.current) return;
+      if (!ready.current) return;
       const y    = window.scrollY;
       const diff = y - lastY.current;
       if      (diff >  6 && y > threshold) setHidden(true);
@@ -38,7 +41,7 @@ export function useHideOnScroll(threshold = 80) {
       if (timer.current) clearTimeout(timer.current);
       window.removeEventListener("scroll", onScroll);
     };
-  }, [threshold]);
+  }, [threshold, disabled]);
 
   return hidden;
 }
