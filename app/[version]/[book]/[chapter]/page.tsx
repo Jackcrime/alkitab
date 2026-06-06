@@ -373,21 +373,37 @@ export default function ChapterPage({ params }: {
                   )}>
                   {/* Verse number + indicators */}
                   <span className={cn(
-                    "relative flex items-start justify-end w-5 shrink-0 pt-1",
+                    "flex items-start justify-end w-5 shrink-0 pt-1",  // hapus 'relative' dari sini
                     isSel ? "text-primary" : "text-primary/50",
                   )}>
-                    {isSel
-                      ? <Check className="h-3 w-3 mt-0.5" />
-                      : <span className="text-[0.6rem] font-bold font-sans leading-none">{i + 1}</span>
-                    }
-                    {/* Bookmark dot */}
-                    {isBookmarked && !isSel && (
-                      <span className="absolute -top-0.5 -right-1 w-1.5 h-1.5 rounded-full bg-primary" />
-                    )}
-                    {/* Note dot */}
-                    {hasNote && !isSel && (
-                      <span className="absolute top-1 -right-1 w-1.5 h-1.5 rounded-full bg-amber-400" />
-                    )}
+
+                    {/* Wrap inner jadi anchor untuk dot */}
+                    <span className="relative">
+                      {isSel
+                        ? <Check className="h-3 w-3 mt-0.5" />
+                        : <span className="text-[0.6rem] font-bold font-sans leading-none pr-[1px]">{i + 1}</span>
+                      }
+
+                      {!isSel && (hasNote || isBookmarked) && (
+                        <div className="absolute top-full mt-0.5 right-0 flex items-center gap-0.5 z-10">
+                          {hasNote && (
+                            <div className="group/note h-1.5 w-1.5 hover:w-10 hover:h-[14px] rounded-full bg-amber-400 transition-all duration-300 overflow-hidden flex items-center cursor-default shrink-0">
+                              <span className="text-[0.5rem] font-bold text-amber-950 pl-1.5 opacity-0 group-hover/note:opacity-100 transition-opacity duration-200 whitespace-nowrap leading-none">
+                                noted
+                              </span>
+                            </div>
+                          )}
+                          {isBookmarked && (
+                            <div className="group/bk h-1.5 w-1.5 hover:w-14 hover:h-[14px] rounded-full bg-primary transition-all duration-300 overflow-hidden flex items-center cursor-default shrink-0">
+                              <span className="text-[0.5rem] font-bold text-primary-foreground pl-1.5 opacity-0 group-hover/bk:opacity-100 transition-opacity duration-200 whitespace-nowrap leading-none">
+                                booked
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </span>
+
                   </span>
                   <span className="verse-serif text-foreground">{text}</span>
                 </div>
@@ -400,77 +416,84 @@ export default function ChapterPage({ params }: {
       {/* ── Multi-select action bar ─────────────────────────────────────── */}
       {selected.size > 0 && (
         <div className="fixed bottom-0 inset-x-0 z-40 bg-background/95 backdrop-blur-sm border-t border-border">
-          <div className="flex items-center gap-1.5 px-3 py-3 max-w-[660px] mx-auto overflow-x-auto">
-            {/* Count */}
-            <span className="text-xs font-medium text-muted-foreground shrink-0 min-w-[50px]">
-              {selected.size} dipilih
-            </span>
-
-            {/* Highlight colors */}
+          {/* Tambahkan justify-between dan gap yang lebih besar di container utama */}
+          <div className="flex items-center justify-between px-3 py-3 max-w-[660px] mx-auto overflow-x-auto gap-4">
+            
+            {/* === GRUP KIRI: Jumlah Ayat & Highlight === */}
             <div className="flex items-center gap-1.5 shrink-0">
-              {HL_COLOR_KEYS.map(color => (
-                <button key={color}
-                  onClick={() => handleHighlight(color)}
-                  className={cn(
-                    "w-5 h-5 rounded-full border-2 transition-all active:scale-110 shrink-0",
-                    allSameColor === color ? "border-foreground scale-110" : "border-transparent",
-                  )}
-                  style={{ background: HL_COLORS[color].swatch }}
-                />
-              ))}
+              {/* Count */}
+              <span className="text-xs font-medium text-muted-foreground shrink-0 min-w-[50px]">
+                {selected.size} dipilih
+              </span>
+
+              {/* Highlight colors */}
+              <div className="flex items-center gap-1.5 shrink-0">
+                {HL_COLOR_KEYS.map(color => (
+                  <button key={color}
+                    onClick={() => handleHighlight(color)}
+                    className={cn(
+                      "w-5 h-5 rounded-full border-2 transition-all active:scale-110 shrink-0",
+                      allSameColor === color ? "border-foreground scale-110" : "border-transparent",
+                    )}
+                    style={{ background: HL_COLORS[color].swatch }}
+                  />
+                ))}
+              </div>
             </div>
 
-            <Separator orientation="vertical" className="h-5 mx-0.5 shrink-0" />
+            {/* === GRUP KANAN: Action Buttons & Cancel === */}
+            <div className="flex items-center gap-1.5 shrink-0">
+              {/* Bookmark */}
+              <button onClick={handleVerseBookmarks}
+                className="h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0">
+                {allSelectedBk
+                  ? <BookmarkCheck className="h-4 w-4 text-primary" fill="currentColor" />
+                  : <Bookmark className="h-4 w-4" />}
+              </button>
 
-            {/* Bookmark */}
-            <button onClick={handleVerseBookmarks}
-              className="h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0">
-              {allSelectedBk
-                ? <BookmarkCheck className="h-4 w-4 text-primary" fill="currentColor" />
-                : <Bookmark className="h-4 w-4" />}
-            </button>
+              {/* Note — single verse only */}
+              <button
+                onClick={() => isSingle && openNoteEditor(singleIdx + 1)}
+                className={cn(
+                  "h-8 w-8 rounded-lg flex items-center justify-center transition-colors shrink-0",
+                  isSingle
+                    ? "text-muted-foreground hover:text-foreground hover:bg-muted"
+                    : "text-muted-foreground/30 cursor-not-allowed"
+                )}>
+                <PenLine className={cn("h-4 w-4", singleHasNote && "text-amber-400")} />
+              </button>
 
-            {/* Note — single verse only */}
-            <button
-              onClick={() => isSingle && openNoteEditor(singleIdx + 1)}
-              className={cn(
-                "h-8 w-8 rounded-lg flex items-center justify-center transition-colors shrink-0",
-                isSingle
-                  ? "text-muted-foreground hover:text-foreground hover:bg-muted"
-                  : "text-muted-foreground/30 cursor-not-allowed"
-              )}>
-              <PenLine className={cn("h-4 w-4", singleHasNote && "text-amber-400")} />
-            </button>
+              {/* Verse card — single verse only */}
+              <button
+                onClick={() => isSingle && setCardVerse(singleIdx)}
+                className={cn(
+                  "h-8 w-8 rounded-lg flex items-center justify-center transition-colors shrink-0",
+                  isSingle
+                    ? "text-muted-foreground hover:text-foreground hover:bg-muted"
+                    : "text-muted-foreground/30 cursor-not-allowed"
+                )}>
+                <ImageIcon className="h-4 w-4" />
+              </button>
 
-            {/* Verse card — single verse only */}
-            <button
-              onClick={() => isSingle && setCardVerse(singleIdx)}
-              className={cn(
-                "h-8 w-8 rounded-lg flex items-center justify-center transition-colors shrink-0",
-                isSingle
-                  ? "text-muted-foreground hover:text-foreground hover:bg-muted"
-                  : "text-muted-foreground/30 cursor-not-allowed"
-              )}>
-              <ImageIcon className="h-4 w-4" />
-            </button>
+              {/* Copy */}
+              <button onClick={handleCopySelected}
+                className="h-8 px-2 rounded-lg flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0">
+                <Copy className="h-3.5 w-3.5" />
+              </button>
 
-            {/* Copy */}
-            <button onClick={handleCopySelected}
-              className="h-8 px-2 rounded-lg flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0">
-              <Copy className="h-3.5 w-3.5" /> Salin
-            </button>
+              {/* Share */}
+              <button onClick={handleShareSelected}
+                className="h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0">
+                <Share2 className="h-3.5 w-3.5" />
+              </button>
 
-            {/* Share */}
-            <button onClick={handleShareSelected}
-              className="h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0">
-              <Share2 className="h-3.5 w-3.5" />
-            </button>
+              {/* Cancel (dihilangkan ml-auto karena parent sudah diatur ke kanan) */}
+              <button onClick={clearSel}
+                className="h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
 
-            {/* Cancel */}
-            <button onClick={clearSel}
-              className="ml-auto h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0">
-              <X className="h-4 w-4" />
-            </button>
           </div>
         </div>
       )}
